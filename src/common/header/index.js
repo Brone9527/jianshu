@@ -10,9 +10,39 @@ import {
     Nav,
     NavItem,
     NavSearch,
+    SearchInfo,
+    SearchInfoTitle,
+    SearchInfoSwitch,
+    SearchInfoList,
+    SearchInfoItem,
     SearchWrapper
 } from './style';
- class Header extends Component {
+
+class Header extends Component {
+
+  getListArea = () => {
+    const {list, focused} = this.props;
+    if(focused){
+      return (
+        <SearchInfo>
+        <SearchInfoTitle>
+          热门搜索
+          <SearchInfoSwitch>换一批</SearchInfoSwitch>
+        </SearchInfoTitle>
+        <SearchInfoList>
+          {
+            list.map((item) => {
+              return <SearchInfoItem key={item}> {item}</SearchInfoItem>
+            })
+          }        
+        </SearchInfoList>
+      </SearchInfo>
+      )
+    }else{
+      return null;
+    }  
+  }
+
   render(){
     const {focused, handleInputBlur, handleInputFocus} = this.props;
     return(     
@@ -27,19 +57,18 @@ import {
             </NavItem>
             <SearchWrapper>
               <CSSTransition
-                in={this.props.focused}
+                in={focused}
                 timeout={200}
                 classNames="slide"
               >
                 <NavSearch 
-                  in={this.props.focused}
                   className = {focused ? 'focused':''}
                   onFocus = {handleInputFocus}
                   onBlur = {handleInputBlur}
                 ></NavSearch>
               </CSSTransition>
-              
               <i className={focused ? 'focused iconfont zoom': 'iconfont zoom'}>&#xe662;</i>
+              {this.getListArea(focused)}
             </SearchWrapper>
             <Addition>
               <Button className="reg">注册</Button>
@@ -57,13 +86,15 @@ import {
 
 const mapStateToProps = (state) =>{
   return {
-    focused: state.header.focused
+    focused: state.getIn(['header','focused']),
+    list: state.getIn(['header','list'])
   }
 }
 
 const mapDispatchToProps = (dispatch) =>{
   return {
     handleInputFocus(){
+      dispatch(actionCreators.getList());
       dispatch(actionCreators.searchFocus());
     },  
     handleInputBlur(){
